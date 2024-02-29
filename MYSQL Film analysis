@@ -161,10 +161,3 @@ order by first_name asc;
 
 select count(first_name) from actor
 where first_name like 'D%' or first_name like 'E%' or first_name like 'W%';
-
-
-/* Ačiū už puikų mokymą!!! :)*/
- 
- 
-
-
