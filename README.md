@@ -9,3 +9,4 @@ where recently I have finished Data Analytics
 course.
 I learned to work with tools / technologies like SQL,
 Power BI and Python.
+I also have a passion for cyber security, which I am always interested in.
