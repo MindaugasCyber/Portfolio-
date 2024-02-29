@@ -1,0 +1,170 @@
+-- 1. Parašykite SQL užklausą, kuri pateiktų filmų pavadinimus, jų nuomos kainą bei nuomos laikotarpio
+-- trukmę, kai nuomos kaina yra 4.99 ir nuomos trukmė yra 6. Naudokite lentelę “film”.
+
+select title, rental_rate, rental_duration from film
+where rental_rate = '4.99' and rental_duration = '6';
+
+-- 1. Parašykite SQL užklausą, kuri pateikia kiekvieno kliento_id 
+-- ir jo mažiausią mokėjimą stulpelyje
+-- “Minimaliausias mokėjimas” didėjančia tvarka. Naudokite lentelę “payment”.
+
+-- Tinkamas
+
+select customer_id , min(amount) as 'Minimaliausias mokejimas'
+from  payment
+group by customer_id 
+order by min(amount) asc;
+
+-- Variantas 2 netinkamas
+select customer_id, amount as 'Minimaliausias mokejimas'
+from payment
+where amount < 1
+order by amount asc;
+
+-- variantas 3 netinkamas
+select distinct customer_id, amount as 'Minimaliausias mokejimas'
+from payment
+where amount < 1
+order by amount asc;
+
+
+-- 3. Pateikite klientų vardus ir pavardes, gyvenančius M raide prasidedančiuose miestuose.
+-- Naudokite
+-- lenteles “customer”, “address”, “city”.
+
+
+select first_name, last_name, city
+from customer
+inner join city on (city_id)
+join address using (address_id)
+where city like 'M%';
+
+/* 4. Parašykite SQL užklausą, pateikiančią klientų ID, mokėjimo datą ir mažiausią kiekvieno kliento
+mokėjimą, bet tik tų klientų, kurių mažiausias mokėjimas per dieną yra 6.99. Mokėjimo datą
+pateikite formatu YYYY-MM-DD stulpelyje “Data”, o mažiausią mokėjimą – stulpelyje “Minimalus
+mokestis”. Naudokite lentelę “payment”.*/
+
+select customer_id, date(payment_date) as 'Data', amount as 'Minimalus mokestis' from payment
+where amount like '6.99'
+group by customer_id;
+
+
+/* 5. Parašykite SQL užklausą, pateikiančią ilgiausiai trunkančių filmų pavadinimus. Naudokite lentelę
+„Film“.*/
+
+select title, length from film
+where length = (select max(length) from film);
+
+/* 6. Parašykite SQL užklausą, pateikiančią klientų vardus, pavardes, jų iš viso nuomai išleidžiamą sumą
+(stulpelyje „Iš viso“), o stulpelyje „Rėžiai“ pateikite suskirstytus klientus tokiu būdu: klientus, kurie iš
+viso nuomai išleidžia 100 ir daugiau, pažymėkite kaip „Virš 100“, o išleidžiančius iki 100 pažymėkite
+„Iki 100“. Naudokite lenteles „customer“ ir „payment“.*/
+
+
+select customer.first_name, customer.last_name, sum(amount) as 'Iš viso',
+case 
+	when sum(payment.amount) <= 100 then 'Iki 100'
+	else 'Virš 100'
+end as 'Rėžiai'
+from payment 
+left join customer using (customer_id)
+group by customer.customer_id;
+
+/* 7. Parašykite SQL užklausą, pateikiančią klientų vardus, pavardes ir vidutinius mokėjimus (Stulpelyje
+„Average“), bet tik tų klientų, kurių vidutiniškai atliktų mokėjimų vertė yra tarp 3 ir 5. Rezultatą
+pateikite naujoje lentelėje, pavadinimu „Average_payment“. Naudokite lentelę „payment“ ir
+„customer“.*/
+
+select customer.first_name, customer.last_name , avg(payment.amount)as 'Average'
+from customer left join payment using (customer_id)
+where (select avg(amount) from payment) < 5 and (select avg(amount) from payment) > 3
+group by customer.customer_id
+;
+
+/* 8. Parašykite SQL užklausą, pakeičiančią lentelės „Average_payment“ stulpelį „Average“ į
+„Vidutinis_mokėjimas“, o šio stulpelio reikšmes atvaizduokite dviem skaičiais po kablelio.
+Naudokite duomenų tipą DECIMAL(n, d), kur n=5, d=2.*/
+
+
+select customer.first_name, customer.last_name, avg(payment.amount) as 'Vidutinis_mokėjimas',
+avg(payment_amount(decimal (5,2))
+from customer left join payment using (customer_id)
+where (select avg(amount) from payment) < 5 and (select avg(amount) from payment) > 3
+group by customer.customer_id;
+ -- reikia kazkur iterpti decimal (5,2)
+ 
+ /* 9. Parašykite SQL užklausą, pateikiančią aktorių vardus, pavardes ir filmų pavadinimus, kuriuose jie
+vaidino. Rezultatą pateikite atskiriant brūkšniu viename stulpelyje, pavadinimu „Aktoriai ir filmai“.
+Naudokite lenteles „actor“, „film_actor“, „film“.*/
+
+select concat(first_name, '-' ,last_name, '-', title) as 'Aktoriai ir filmai'
+from actor
+join film_actor using (actor_id)
+join film using (film_id);
+
+/* 10. Parašykite SQL užklausą, pateikiančią klientų vardus ir pavardes, jų atliktus mokėjimus, kuriuos
+suskirstykite stulpelyje „Mokesčio tipas“ į tokias grupes:
+- Jei mokėjimas minimalus tai priskirkite grupei „Minimalus“
+- Jei mokėjimas yra maksimalus tai grupė – „Maksimalus“
+- Visus kitus mokėjimus priskirkite grupei „Kita“.
+Rezultatą surūšiuokite pagal mokėjimus didėjimo tvarka.
+Naudokite lenteles „customer“, „payment“.*/
+
+select first_name, last_name, amount, 'Mokescio tipas' from customer
+left join payment using (customer_id)
+where amount select (min(amount) 'Minimalus' and max(amount) 'Maksimalus') from payment
+group by amount desc;
+-- nebaigtas
+
+/* 11. Funkcija length() grąžina elementų skaičių įraše. Tai yra length('Labas')
+grąžins 5, nes žodyje ’Labas’ yra 5ki simboliai.
+Išveskite visus aktorių vardus, kurie yra trumpesni nei 5ki simboliai.
+Išveskite aktorių vardus ir naują stulpelį, kuriame būtų toks tekstas:
+• ”5ki ir daugiau”, jei vardas yra iš 5kių ir daugiau simbolių
+• ”Mažiau 5kių simbolių”, jei vardas turi mažiau 5kių simbolių.
+Suskaičiuokite, kiek vardų yra iš 5kių ir daugiau simbolių ir kiek vardų turi
+mažiau, nei 5kis simbolius. */
+
+select first_name from actor
+where length(first_name) < 5;
+
+select first_name,
+case
+when length(first_name) >= 5 then '5ki ir daugiau'
+else 'Mažiau 5­kių simbolių'
+end as simboliu_sk
+from actor;
+
+/* 12. A.1. Suraskite, kiek vidutiniškai trukdavo filmai, priklausomai nuo reitingo.
+A.2. Suraskite vidutinį nuomos laiką filmams pagal reitingą (rating).
+A.3. Suraskite vidutinę nuomos kainą filmams pagal reitingą.
+B. Išvesti aktorių vardus, pavardes viename stulpelyje. Vardai turi būti mažo
+siomis raidėmis, pavardės didžiosiomis.
+C. Išvesti aktorių vardus, prasidedančius raidėmis ’A’, ’B’, ’E’. Suskaičiuoti,
+kiek vardų prasideda raidėmis ’D’, ’E’, ’W’. Čia turima omeny, jog jei turime
+Dan, Ed, Wolf, tai atsakymas bus 3.*/
+
+select avg(length), rating from film
+group by rating;
+
+select avg(rental_duration) from film
+group by rating;
+
+select avg(rental_rate) from film
+group by rating;
+
+select concat (lower(first_name), " ", upper(last_name)) from actor;
+
+select first_name from actor
+where first_name like 'A%' or first_name like 'B%' or first_name like 'E%'
+order by first_name asc;
+
+select count(first_name) from actor
+where first_name like 'D%' or first_name like 'E%' or first_name like 'W%';
+
+
+/* Ačiū už puikų mokymą!!! :)*/
+ 
+ 
+
+
